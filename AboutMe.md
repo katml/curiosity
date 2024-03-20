@@ -1,4 +1,4 @@
-![image](https://github.com/katml/curiosity/assets/164201624/e556e78e-b79d-43d0-b429-d9c5d91c3ae6)
+![image](https://github.com/katml/curiosity/assets/164201624/5c25607c-830d-49a7-abc7-8a2f036fbafb)
 
 About Me :
 
