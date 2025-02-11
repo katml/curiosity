@@ -2,7 +2,7 @@
 
 About Me :
 
-:wave: I am a Machine Learning Engineer and Data Scientist from Canada  :woman_technologist:
+:wave: I am a Machine Learning Engineer and Data Scientist  :woman_technologist:
 
 📈 ... that has an [un]healthy obsession with data and tea ... :tea:
 
