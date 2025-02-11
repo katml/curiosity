@@ -6,6 +6,6 @@ About Me :
 
 📈 ... that has an [un]healthy obsession with data and tea ... :tea:
 
-✨ ... with almost 15 years of experience working in full-turn around research ... ✨
+✨ ... with 15+ years of experience working in full-turn around research ... ✨
 
 :brain: ... who likes to read and write about data, tech and AI ... :wrench:
