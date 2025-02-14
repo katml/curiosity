@@ -17,4 +17,4 @@ This is a container for projects which I have been motivated to learn about, and
 
 Please feel welcome to ask any questions about the projects in this repository.
 
-Contrary to popular belief curiosity did not kill the cat. It killed static ways of thinking.
+Contrary to popular belief curiosity did not kill the cat. It killed static ways of thinking. 
