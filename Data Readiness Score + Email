@@ -1,0 +1,382 @@
+// ============================
+// Nonprofit Data Readiness Score Micro-App
+// + Netlify Forms email capture (stores results)
+// ============================
+
+// Customize these for your site:
+const CONTACT_FORM_URL = "https://your-site.com/contact"; // <-- your contact form link
+const STARTER_CHECKLIST_URL = "https://your-site.com/starter-checklist"; // <-- lead magnet link (PDF / page)
+
+// Quiz definition
+const quiz = [
+  {
+    id: "storage",
+    title: "Where is your program + service data stored?",
+    options: [
+      { label: "Mostly spreadsheets in different places", detail: "Scattered files, email attachments, multiple owners", points: 0 },
+      { label: "Mix of spreadsheets + one system", detail: "Some centralization, still lots of manual work", points: 6 },
+      { label: "Mostly one system", detail: "A primary tool/source of truth exists", points: 10 },
+      { label: "Centralized + documented", detail: "Clear structure and where to find things", points: 12 }
+    ]
+  },
+  {
+    id: "confidence",
+    title: "How confident are you in your numbers month to month (for funders/board)?",
+    options: [
+      { label: "Not confident; we often fix after the fact", detail: "Corrections, surprises, “version wars”", points: 0 },
+      { label: "Somewhat; occasional surprises", detail: "Mostly okay, but errors pop up", points: 6 },
+      { label: "Confident; rare issues", detail: "Most numbers are stable", points: 10 },
+      { label: "Very confident; definitions are stable", detail: "Consistent and repeatable reporting", points: 12 }
+    ]
+  },
+  {
+    id: "speed",
+    title: "Can you answer in 10 minutes: “How many people did we serve last month?”",
+    options: [
+      { label: "No / would take hours", detail: "Requires digging across sources", points: 0 },
+      { label: "Yes, but it’s manual", detail: "Possible with effort", points: 6 },
+      { label: "Yes, mostly automated", detail: "Quick pull or standard report", points: 10 },
+      { label: "Yes + we can break it down (program, location, equity)", detail: "Fast + useful segmentation", points: 12 }
+    ]
+  },
+  {
+    id: "definitions",
+    title: "Do you have consistent definitions (e.g., “served,” “active,” “participant”)?",
+    options: [
+      { label: "No, it varies", detail: "Different teams count differently", points: 0 },
+      { label: "Some are consistent", detail: "A few key metrics align", points: 6 },
+      { label: "Most are consistent + written somewhere", detail: "Light documentation exists", points: 10 },
+      { label: "Fully documented + shared", detail: "One definition everyone uses", points: 12 }
+    ]
+  },
+  {
+    id: "ownership",
+    title: "Who “owns” the reporting + data process?",
+    options: [
+      { label: "Nobody / it’s ad hoc", detail: "It happens when someone has time", points: 0 },
+      { label: "One person informally", detail: "A hero keeps it together", points: 6 },
+      { label: "One person formally + backup", detail: "Clear owner and coverage", points: 10 },
+      { label: "A defined process + roles", detail: "Roles + responsibilities are clear", points: 12 }
+    ]
+  },
+  {
+    id: "use",
+    title: "How often do you review outcomes/impact data to make decisions?",
+    options: [
+      { label: "Rarely / mostly for reporting", detail: "More compliance than learning", points: 0 },
+      { label: "Occasionally", detail: "Sometimes informs planning", points: 6 },
+      { label: "Monthly/quarterly", detail: "Used on a cadence", points: 10 },
+      { label: "Built into operations", detail: "Data drives regular decisions", points: 12 }
+    ]
+  },
+  {
+    id: "quality",
+    title: "Data quality checks (duplicates, missing fields, validation) are…",
+    options: [
+      { label: "Not done", detail: "Errors discovered late", points: 0 },
+      { label: "Done sometimes", detail: "When things look off", points: 6 },
+      { label: "Done regularly", detail: "A routine exists", points: 10 },
+      { label: "Automated + monitored", detail: "Rules run and issues are flagged", points: 12 }
+    ]
+  },
+  {
+    id: "funder",
+    title: "If a funder asked for a breakdown report by next week, you would…",
+    options: [
+      { label: "Panic a bit", detail: "Scramble + rebuild numbers", points: 0 },
+      { label: "Pull it together manually", detail: "Possible but time-consuming", points: 6 },
+      { label: "Generate most of it quickly", detail: "You have most pieces ready", points: 10 },
+      { label: "Use a template/dashboard", detail: "Fast and confident delivery", points: 12 }
+    ]
+  }
+];
+
+const MAX_POINTS = quiz.reduce((sum, q) => sum + Math.max(...q.options.map(o => o.points)), 0);
+
+// Tiers
+function getTier(score) {
+  if (score <= 34) return "Starter";
+  if (score <= 59) return "Developing";
+  if (score <= 79) return "Strong";
+  return "Advanced";
+}
+
+function tierContent(tier) {
+  const content = {
+    Starter: {
+      meaning: "Your reporting is likely more stressful than it needs to be, and it may be creating risk for funder confidence. The upside: a few lightweight fixes can dramatically reduce chaos (without buying new tools).",
+      recos: [
+        "Define your 5 key metrics and write the exact definitions (one shared page).",
+        "Create one source of truth (a structured spreadsheet is fine to start).",
+        "Add 3 basic validation rules (required fields, duplicates, date format)."
+      ],
+      ctaTitle: "Want a simple roadmap (no new tools)?",
+      ctaText: "Share your context through my contact form and I’ll recommend the fastest “first fixes” for cleaner reporting and calmer grant cycles.",
+      ctaBtn: "Contact me for a Roadmap",
+      ctaNote: "Most nonprofits in this tier can improve noticeably in 2–4 weeks with a lightweight workflow.",
+      showStarterLeadMagnet: true
+    },
+    Developing: {
+      meaning: "You can report, but it’s effort-heavy and fragile. The biggest win is making reporting repeatable so it doesn’t rely on heroics before every deadline.",
+      recos: [
+        "Standardize intake (same fields, same meaning, every time).",
+        "Build a repeatable monthly reporting workflow (steps, owner, timeline).",
+        "Add light automation (forms → sheet/db, templates, scheduled exports)."
+      ],
+      ctaTitle: "Want to make reporting repeatable?",
+      ctaText: "Use my contact form to tell me what you report on and to whom — I’ll suggest a workflow your team can actually maintain.",
+      ctaBtn: "Contact me for a Workflow Fix",
+      ctaNote: "This tier improves fastest by reducing manual steps and standardizing definitions.",
+      showStarterLeadMagnet: false
+    },
+    Strong: {
+      meaning: "You’re close to reliable reporting and better decisions. Now it’s about speed, segmentation, and funder-ready outputs that tell a clearer impact story.",
+      recos: [
+        "Automate quality checks (flag missing/duplicate/inconsistent entries).",
+        "Create funder-ready reporting templates (same format every time).",
+        "Add segmentation (program, location, equity variables) for better insight."
+      ],
+      ctaTitle: "Want faster funder-ready reporting?",
+      ctaText: "If you share your reporting requirements, I can recommend the quickest upgrades for speed + credibility.",
+      ctaBtn: "Contact me to Optimize Reporting",
+      ctaNote: "At this tier, small automation + templates create a big quality jump.",
+      showStarterLeadMagnet: false
+    },
+    Advanced: {
+      meaning: "You’re in a great position to scale insights. The focus now is governance, stakeholder dashboards, and forecasting/scenario support — while staying privacy-smart.",
+      recos: [
+        "Build stakeholder dashboards (ops, leadership, funders) with stable definitions.",
+        "Add forecasting or scenario analysis for planning and resourcing.",
+        "Strengthen governance + privacy (roles, access, retention, documentation)."
+      ],
+      ctaTitle: "Want to scale insights responsibly?",
+      ctaText: "Share your goals via my contact form — I’ll suggest next steps for governance and dashboards stakeholders trust.",
+      ctaBtn: "Contact me for Strategy Help",
+      ctaNote: "Advanced teams win by aligning stakeholders around shared definitions and trusted dashboards.",
+      showStarterLeadMagnet: false
+    }
+  };
+  return content[tier];
+}
+
+// State
+let currentIndex = 0;
+const answers = new Array(quiz.length).fill(null);
+
+// Elements
+document.getElementById("year").textContent = new Date().getFullYear();
+
+const quizView = document.getElementById("quizView");
+const resultsView = document.getElementById("resultsView");
+
+const qTitle = document.getElementById("qTitle");
+const qOptions = document.getElementById("qOptions");
+
+const backBtn = document.getElementById("backBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+
+const scoreNum = document.getElementById("scoreNum");
+const tierLine = document.getElementById("tierLine");
+const meaningText = document.getElementById("meaningText");
+const recoList = document.getElementById("recoList");
+const ctaTitleEl = document.getElementById("ctaTitle");
+const ctaTextEl = document.getElementById("ctaText");
+const ctaBtn = document.getElementById("ctaBtn");
+const leadMagnetBtn = document.getElementById("leadMagnetBtn");
+const ctaNote = document.getElementById("ctaNote");
+const restartBtn = document.getElementById("restartBtn");
+
+// Netlify form elements
+const resultsForm = document.getElementById("resultsForm");
+const formStatus = document.getElementById("formStatus");
+const scoreField = document.getElementById("scoreField");
+const tierField = document.getElementById("tierField");
+const recoField = document.getElementById("recoField");
+const timestampField = document.getElementById("timestampField");
+const pageField = document.getElementById("pageField");
+
+// Render question
+function renderQuestion() {
+  const q = quiz[currentIndex];
+  qTitle.textContent = q.title;
+  qOptions.innerHTML = "";
+
+  const selectedIndex = answers[currentIndex];
+
+  q.options.forEach((opt, idx) => {
+    const id = `q${currentIndex}_opt${idx}`;
+    const wrapper = document.createElement("label");
+    wrapper.className = "option" + (selectedIndex === idx ? " selected" : "");
+    wrapper.setAttribute("for", id);
+
+    wrapper.innerHTML = `
+      <input type="radio" name="q${currentIndex}" id="${id}" ${selectedIndex === idx ? "checked" : ""}/>
+      <div class="label">
+        <strong>${opt.label}</strong>
+        <span>${opt.detail}</span>
+      </div>
+    `;
+
+    wrapper.addEventListener("click", () => {
+      answers[currentIndex] = idx;
+      [...qOptions.querySelectorAll(".option")].forEach(el => el.classList.remove("selected"));
+      wrapper.classList.add("selected");
+      nextBtn.disabled = false;
+      updateNavButtons();
+    });
+
+    qOptions.appendChild(wrapper);
+  });
+
+  updateProgress();
+  updateNavButtons();
+  nextBtn.disabled = answers[currentIndex] === null;
+}
+
+function updateProgress() {
+  const pct = (currentIndex / quiz.length) * 100;
+  progressBar.style.width = `${pct}%`;
+  progressText.textContent = `Question ${currentIndex + 1} of ${quiz.length}`;
+}
+
+function updateNavButtons() {
+  backBtn.disabled = currentIndex === 0;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "See Results" : "Next";
+}
+
+// Compute score
+function computeScore() {
+  let points = 0;
+  for (let i = 0; i < quiz.length; i++) {
+    const chosen = answers[i];
+    if (chosen === null) continue;
+    points += quiz[i].options[chosen].points;
+  }
+  const score = Math.round((points / MAX_POINTS) * 100);
+  return { points, score };
+}
+
+function renderResults() {
+  const { score } = computeScore();
+  const tier = getTier(score);
+  const t = tierContent(tier);
+
+  scoreNum.textContent = score;
+  tierLine.textContent = `Tier: ${tier}`;
+  meaningText.textContent = t.meaning;
+
+  recoList.innerHTML = "";
+  t.recos.forEach(r => {
+    const li = document.createElement("li");
+    li.textContent = r;
+    recoList.appendChild(li);
+  });
+
+  // CTA setup
+  ctaTitleEl.textContent = t.ctaTitle;
+  ctaTextEl.textContent = t.ctaText;
+  ctaBtn.textContent = t.ctaBtn;
+  ctaBtn.href = CONTACT_FORM_URL;
+  ctaNote.textContent = t.ctaNote;
+
+  // Lead magnet: show only for Starter
+  if (t.showStarterLeadMagnet) {
+    leadMagnetBtn.classList.remove("hidden");
+    leadMagnetBtn.href = STARTER_CHECKLIST_URL;
+  } else {
+    leadMagnetBtn.classList.add("hidden");
+    leadMagnetBtn.href = "#";
+  }
+
+  // Populate hidden fields for Netlify Form
+  scoreField.value = String(score);
+  tierField.value = tier;
+  recoField.value = t.recos.join(" | ");
+  timestampField.value = new Date().toISOString();
+  pageField.value = window.location.href;
+
+  // Reset form status
+  formStatus.textContent = "";
+
+  quizView.classList.add("hidden");
+  resultsView.classList.remove("hidden");
+  progressBar.style.width = "100%";
+}
+
+// Netlify Forms submission via fetch (stays on the page)
+function encodeFormData(data) {
+  return Object.keys(data)
+    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+    .join("&");
+}
+
+resultsForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  formStatus.textContent = "Sending…";
+
+  const formData = new FormData(resultsForm);
+  const data = Object.fromEntries(formData.entries());
+
+  try {
+    const res = await fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: encodeFormData(data)
+    });
+
+    if (res.ok) {
+      formStatus.textContent = "Sent! Check your inbox (and your spam folder just in case).";
+      resultsForm.reset();
+
+      // Re-populate hidden fields after reset (keep score/tier)
+      const { score } = computeScore();
+      const tier = getTier(score);
+      const t = tierContent(tier);
+      scoreField.value = String(score);
+      tierField.value = tier;
+      recoField.value = t.recos.join(" | ");
+      timestampField.value = new Date().toISOString();
+      pageField.value = window.location.href;
+
+    } else {
+      formStatus.textContent = "Hmm — it didn’t send. Please try again.";
+    }
+  } catch (err) {
+    formStatus.textContent = "Network issue — please try again.";
+  }
+});
+
+// Events
+backBtn.addEventListener("click", () => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener("click", () => {
+  if (answers[currentIndex] === null) return;
+
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    renderResults();
+  }
+});
+
+restartBtn.addEventListener("click", () => {
+  currentIndex = 0;
+  for (let i = 0; i < answers.length; i++) answers[i] = null;
+
+  resultsView.classList.add("hidden");
+  quizView.classList.remove("hidden");
+  progressBar.style.width = "0%";
+  renderQuestion();
+});
+
+// Init
+renderQuestion();
