@@ -1,0 +1,35 @@
+.emailCapture{
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(34,48,87,.55);
+}
+.emailLabel{
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.form{ margin: 0; }
+.formRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.formRow input[type="email"]{
+  flex: 1 1 240px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(34,48,87,.9);
+  background: rgba(17,26,51,.55);
+  color: var(--text);
+  outline: none;
+}
+.formRow input[type="email"]::placeholder{ color: rgba(184,195,230,.7); }
+.formStatus{
+  margin: 10px 0 0;
+  color: rgba(233,238,252,.75);
+  font-size: 13px;
+}
