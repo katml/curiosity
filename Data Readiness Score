@@ -1,0 +1,107 @@
+<div class="app">
+  <header class="header">
+    <h1>Nonprofit Data Readiness Score</h1>
+    <p class="subhead">In 60 seconds, see how report-ready you are — and what to fix first (without adding chaos).</p>
+    <p class="microtrust">No upload. No login. Quick diagnostic for reporting + impact tracking.</p>
+  </header>
+
+  <main class="card">
+    <div id="quizView">
+      <div class="topbar">
+        <div class="progressWrap" aria-label="Progress">
+          <div id="progressBar" class="progressBar" style="width: 0%"></div>
+        </div>
+        <div id="progressText" class="progressText">Question 1 of 8</div>
+      </div>
+
+      <div class="qWrap">
+        <h2 id="qTitle" class="qTitle"></h2>
+        <div id="qOptions" class="qOptions"></div>
+      </div>
+
+      <div class="actions">
+        <button id="backBtn" class="btn secondary" type="button">Back</button>
+        <button id="nextBtn" class="btn primary" type="button" disabled>Next</button>
+      </div>
+
+      <div class="hint">
+        <span>Tip:</span> Answer based on how things work most weeks (not your best week).
+      </div>
+    </div>
+
+    <div id="resultsView" class="hidden">
+      <div class="resultsTop">
+        <div>
+          <h2>Your score: <span id="scoreNum">0</span>/100</h2>
+          <p id="tierLine" class="tierLine"></p>
+        </div>
+        <button id="restartBtn" class="btn secondary" type="button">Restart</button>
+      </div>
+
+      <div class="resultsGrid">
+        <section class="panel">
+          <h3>What this means (for nonprofits)</h3>
+          <p id="meaningText"></p>
+        </section>
+
+        <section class="panel">
+          <h3>Your top 3 next steps</h3>
+          <ol id="recoList" class="recoList"></ol>
+        </section>
+
+        <section class="panel ctaPanel">
+          <h3 id="ctaTitle"></h3>
+          <p id="ctaText"></p>
+
+          <!-- Email capture -->
+          <div class="emailCapture">
+            <p class="emailLabel"><strong>Want this emailed to you?</strong> Enter your email and I’ll send your score + next steps.</p>
+
+            <!-- Netlify Form (hidden fields get populated by JS) -->
+            <form id="resultsForm"
+                  name="data-readiness-results"
+                  method="POST"
+                  data-netlify="true"
+                  data-netlify-honeypot="bot-field"
+                  class="form">
+
+              <input type="hidden" name="form-name" value="data-readiness-results" />
+              <p class="hidden">
+                <label>Don’t fill this out: <input name="bot-field" /></label>
+              </p>
+
+              <div class="formRow">
+                <input id="emailInput" name="email" type="email" placeholder="you@nonprofit.org" required />
+                <button id="sendBtn" class="btn primary" type="submit">Email my results</button>
+              </div>
+
+              <!-- Hidden payload fields -->
+              <input type="hidden" id="scoreField" name="score" value="" />
+              <input type="hidden" id="tierField" name="tier" value="" />
+              <input type="hidden" id="recoField" name="recommendations" value="" />
+              <input type="hidden" id="timestampField" name="timestamp" value="" />
+              <input type="hidden" id="pageField" name="page" value="" />
+
+              <p id="formStatus" class="formStatus"></p>
+            </form>
+          </div>
+
+          <div class="ctaBtns">
+            <a id="ctaBtn" class="btn primary" href="#" target="_blank" rel="noopener">Contact me</a>
+            <a id="leadMagnetBtn" class="btn ghost hidden" href="#" target="_blank" rel="noopener">Download the Starter Checklist</a>
+          </div>
+
+          <p class="ctaNote" id="ctaNote"></p>
+        </section>
+      </div>
+
+      <div class="fineprint">
+        <p><strong>Note:</strong> This is a quick diagnostic, not a full audit. If you want, I can help you turn these next steps into a lightweight, repeatable reporting workflow your team can maintain.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> • Built as a lightweight nonprofit micro-tool</p>
+  </footer>
+</div>
